@@ -1,18 +1,22 @@
 
 #include <cstdio>
 #include <string>
+#include <sstream>
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 #include "cryptopp/rsa.h"
-#include "cryptopp/osrng.h"
+#include "cryptopp/randpool.h"
 #include "cryptopp/base64.h"
 
 
 namespace {
   const char* const kGenerateRSAKey = "generate_rsa_key";
+  const char* const kSeedRandom = "seed_random:";
 }
 class RSAInstance : public pp::Instance {
+ private:
+   CryptoPP::RandomPool rng;
  public:
   /// The constructor creates the plugin-side instance.
   /// @param[in] instance the handle to the browser-side plugin instance.
@@ -32,18 +36,31 @@ class RSAInstance : public pp::Instance {
   /// with the parameter.
   /// @param[in] var_message The message posted by the browser.
   virtual void HandleMessage(const pp::Var& var_message) {
+
       if (!var_message.is_string()) {
         PostMessage("Invalid message type, not a string");
         return;
       }
+
       std::string message = var_message.AsString();
 
-      if (message == kGenerateRSAKey) {
+      if (message.find(kSeedRandom) != std::string::npos) {
+        uint8_t i;
+        PostMessage('seeding random');
+        std::stringstream ss(message.substr(strlen(kSeedRandom)));
+        while (ss >> i)
+        {
+          rng.IncorporateEntropy(&i, sizeof(i));
+          if (ss.peek() == ',') {
+            ss.ignore();
+          }
+        }
+      }
+      else if (message == kGenerateRSAKey) {
         std::string data;
         pp::Var var_reply;
         byte outByte;
 
-        CryptoPP::AutoSeededRandomPool rng;
         CryptoPP::RSA::PrivateKey privateKey;
 
         privateKey.GenerateRandomWithKeySize(rng, 2048);
@@ -51,6 +68,7 @@ class RSAInstance : public pp::Instance {
         {
           CryptoPP::ByteQueue queue;
           CryptoPP::Base64Encoder encoder;
+
           privateKey.Save(queue);
 
           queue.CopyTo(encoder);
