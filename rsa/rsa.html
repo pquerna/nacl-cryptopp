@@ -6,7 +6,7 @@
   <script type="text/javascript">
     RSAModule = null;  // Global application object.
     statusText = 'NO-STATUS';
-    var start = new Date().getTime();
+    var start = null;
 
     function generateRandom() {
       var arr = new Uint8Array(128);
@@ -25,6 +25,7 @@
       RSAModule.addEventListener('message', handleMessage, false);
       RSAModule.postMessage('seed_random:' + generateRandom());
       updateStatus('GENERATING RSA KEY');
+      start = new Date().getTime();
       RSAModule.postMessage('generate_rsa_key');
     }
 
