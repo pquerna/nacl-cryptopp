@@ -13,10 +13,6 @@
       RSAModule = document.getElementById('rsa-embed');
       updateStatus('SUCCESS');
       RSAModule.addEventListener('message', handleMessage, false);
-
-      console.log('rsa module:');
-      console.log(RSAModule);
-
       RSAModule.postMessage('generate_rsa_key');
     }
 
