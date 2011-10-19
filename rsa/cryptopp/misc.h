@@ -488,8 +488,10 @@ void SecureWipeBuffer(T *buf, size_t n)
 template<> inline void SecureWipeBuffer(byte *buf, size_t n)
 {
 	volatile byte *p = buf;
-#ifdef __GNUC__
+#ifdef __GNUC__ 
+#if 0
 	asm volatile("rep stosb" : "+c"(n), "+D"(p) : "a"(0) : "memory");
+#endif
 #else
 	__stosb((byte *)(size_t)p, 0, n);
 #endif
@@ -499,7 +501,9 @@ template<> inline void SecureWipeBuffer(word16 *buf, size_t n)
 {
 	volatile word16 *p = buf;
 #ifdef __GNUC__
+#if 0
 	asm volatile("rep stosw" : "+c"(n), "+D"(p) : "a"(0) : "memory");
+#endif
 #else
 	__stosw((word16 *)(size_t)p, 0, n);
 #endif
@@ -509,7 +513,9 @@ template<> inline void SecureWipeBuffer(word32 *buf, size_t n)
 {
 	volatile word32 *p = buf;
 #ifdef __GNUC__
+#if 0
 	asm volatile("rep stosl" : "+c"(n), "+D"(p) : "a"(0) : "memory");
+#endif
 #else
 	__stosd((unsigned long *)(size_t)p, 0, n);
 #endif
@@ -520,7 +526,9 @@ template<> inline void SecureWipeBuffer(word64 *buf, size_t n)
 #if CRYPTOPP_BOOL_X64
 	volatile word64 *p = buf;
 #ifdef __GNUC__
+#if 0
 	asm volatile("rep stosq" : "+c"(n), "+D"(p) : "a"(0) : "memory");
+#endif
 #else
 	__stosq((word64 *)(size_t)p, 0, n);
 #endif

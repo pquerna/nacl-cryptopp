@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title><ProjectName>!</title>
+  <title>RSA!</title>
 
   <script type="text/javascript">
-    <ProjectName>Module = null;  // Global application object.
+    RSAModule = null;  // Global application object.
     statusText = 'NO-STATUS';
+    var start = new Date().getTime();
 
     // Indicate load success.
     function moduleDidLoad() {
-      <ProjectName>Module = document.getElementById('<PROJECT_NAME>');
+      RSAModule = document.getElementById('rsa-embed');
       updateStatus('SUCCESS');
+      RSAModule.addEventListener('message', handleMessage, false);
+
+      console.log('rsa module:');
+      console.log(RSAModule);
+
+      RSAModule.postMessage('generate_rsa_key');
     }
 
     // The 'message' event handler.  This handler is fired when the NaCl module
@@ -18,14 +25,17 @@
     // (in C) or pp::Instance.PostMessage() (in C++).  This implementation
     // simply displays the content of the message in an alert panel.
     function handleMessage(message_event) {
-      alert(message_event.data);
+      alert('your rsa key:'+ message_event.data);
+      var end = new Date().getTime();
+      var time = end - start;
+      alert('Execution time: ' + time);
     }
 
     // If the page loads before the Native Client module loads, then set the
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     function pageDidLoad() {
-      if (<ProjectName>Module == null) {
+      if (RSAModule == null) {
         updateStatus('LOADING...');
       } else {
         // It's possible that the Native Client module onload event fired
@@ -53,7 +63,7 @@
 </head>
 <body onload="pageDidLoad()">
 
-<h1>Native Client Module <ProjectName></h1>
+<h1>Native Client Module RSA</h1>
 <p>
   <!-- Load the published .nexe.  This includes the 'nacl' attribute which
   shows how to load multi-architecture modules.  Each entry in the "nexes"
@@ -78,11 +88,10 @@
     <script type="text/javascript">
       var listener = document.getElementById('listener');
       listener.addEventListener('load', moduleDidLoad, true);
-      listener.addEventListener('message', handleMessage, true);
     </script>
 
     <embed name="nacl_module"
-       id="rsa"
+       id="rsa-embed"
        width=0 height=0
        src="rsa.nmf"
        type="application/x-nacl" />

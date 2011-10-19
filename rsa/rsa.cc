@@ -6,6 +6,7 @@
 #include "ppapi/cpp/var.h"
 #include "cryptopp/rsa.h"
 #include "cryptopp/osrng.h"
+#include "cryptopp/base64.h"
 
 
 namespace {
@@ -32,6 +33,7 @@ class RSAInstance : public pp::Instance {
   /// @param[in] var_message The message posted by the browser.
   virtual void HandleMessage(const pp::Var& var_message) {
       if (!var_message.is_string()) {
+        PostMessage("Invalid message type, not a string");
         return;
       }
       std::string message = var_message.AsString();
@@ -46,16 +48,27 @@ class RSAInstance : public pp::Instance {
 
         privateKey.GenerateRandomWithKeySize(rng, 2048);
 
-        CryptoPP::ByteQueue queue;
-        privateKey.DEREncodePrivateKey(queue);
+        {
+          CryptoPP::ByteQueue queue;
+          CryptoPP::Base64Encoder encoder;
+          privateKey.Save(queue);
 
-        while (queue.Get(outByte) != 0) {
-          data += outByte;
+          queue.CopyTo(encoder);
+          encoder.MessageEnd();
+
+          while (encoder.Get(outByte) != 0) {
+            data += outByte;
+          }
         }
+
 
         var_reply = pp::Var(data);
 
         PostMessage(var_reply);
+      }
+      else {
+        pp::Var var_reply;
+        PostMessage("Invalid Operation");
       }
 
       return;
